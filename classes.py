@@ -121,7 +121,7 @@ class Calendar:
             self.shared_with.remove(username)
             message = f"The User {username} has been removed from the Calendar.\n"
         else:
-            message = f"The User {username} cannot be removed due to not being to the User.\n"
+            message = f"The User {username} cannot be removed due to not being to shared the User.\n"
 
         return message
     
@@ -170,3 +170,54 @@ class ConfigurationScreen:
         Updates the theme.
         """
         self.theme = theme
+
+class Event:
+    def __init__(self, name, description, start_time, end_time):
+        self.event_name = name
+        self.description = description
+        self.start_time = datetime.strptime(start_time, "%H:%M")
+        self.end_time = datetime.strptime(end_time, "%H:%M")
+        self.shared_with = list()
+
+    def change_description(self, new_description):
+        """
+        Updates the description.
+        """ 
+        self.description = new_description
+
+    def change_time(self, new_start, new_end):
+        """
+        Updates the start_time and end_time.
+        """
+        self.start_time = datetime.strptime(new_start, "%H:%M")
+        self.end_time = datetime.strptime(new_end, "%H:%M")
+
+    def share_event(self, username):
+        """
+        Adds the User based on the username
+        to the list of people the event 
+        has been shared with if the User 
+        is not existing shared User. 
+        """
+        if username not in self.shared_with:
+            self.shared_with.append(username)
+            message = f"The Event has been successfully shared with user {username}.\n"
+        else:
+            message = f"The User {username} already been shared of this Event.\n"
+
+        return message
+    
+    def remove_share(self, username):
+        """
+        Removes the User associated with the username
+        from the shared_with users that has access to
+        the Event. 
+        """
+        if username in self.shared_with:
+            self.shared_with.remove(username)
+            message = f"The User {username} has been removed from the Event.\n"
+        else:
+            message = f"The User {username} cannot be removed due to not being shared to the User.\n"
+
+        return message
+    
