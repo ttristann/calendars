@@ -4,7 +4,7 @@
 # functionalities of the application. 
 
 from zoneinfo import ZoneInfo
-from datetime import datetime
+from datetime import datetime, timezone
 
 class User:
     users = {} # stores all of the user instances that are created during the session
@@ -37,14 +37,14 @@ class User:
             return User(username) # constructs a new User object
         return None
     
-    def removeCalendar(self, calendar_name):
+    def remove_calendar(self, calendar_name):
         """
         Removes all Calendar objects from the calendars
         that are associated with the calendar_name.
         """
         self.calendars = [cal for cal in self.calendars if cal.calendar_name != calendar_name]
 
-    def createCalendar(self, calendar_name, is_public):
+    def create_calendar(self, calendar_name, is_public):
         """
         Creates a new Calendar that is automatically 
         associated with the User. 
@@ -54,7 +54,7 @@ class User:
 
         return new_calendar
 
-    def updateCalendar(self, calendar_name, new_name = None, is_public = None):
+    def update_calendar(self, calendar_name, new_name = None, is_public = None):
         """
         Accesses the corresponding the Calendar based on 
         the calendar_name within the calendars the User 
@@ -72,6 +72,14 @@ class User:
                     calendar.calendar_name = new_name
                 break
 
+    def display_calendars(self):
+        """
+        Prints out the calendars the User has access to. 
+        """
+        print(f"\nUser: {self.username}'s Calendars")
+        for calendar in self.calendars:
+            print(f"- {calendar.calendar_name} (Public: {calendar.is_public})")
+
 class Calendar:
     def __init__(self, calendar_name, is_public, owner):
         self.calendar_name = calendar_name
@@ -88,7 +96,7 @@ class Calendar:
         the that are part of the current Calendar. 
         """
         new_event = Event(event_name, description, start_time, end_time)
-        self.events.appened(new_event)
+        self.events.append(new_event)
 
     def remove_event(self, event_name):
         """
@@ -149,21 +157,22 @@ class Calendar:
         """
         print(f"Calendar: {self.calendar_name} (Public: {self.is_public}) has the following events: \n")
         for event in self.events:
-            print(f"- {event}")
+            print(f"- {event.event_name}")
 
 class ConfigurationScreen:
-    def __init__(self, time_zone = "UTC", theme = "default"):
-        self.time_zone = ZoneInfo(time_zone)
+    def __init__(self, time_zone=None, theme="default"):
+        # use datetime.timezone.utc if no valid time zone is provided
+        self.time_zone = timezone.utc if time_zone in [None, "UTC"] else time_zone
         self.theme = theme
 
     def set_time_zone(self, time_zone):
         """
-        Updates the time_zone.
+        Updates the time zone.
         """
-        try:
-            self.time_zone = ZoneInfo(time_zone)
-        except ValueError:
-            print("Invalid time zone. The old time zone will stil be used.")
+        if time_zone == "UTC":
+            self.time_zone = timezone.utc
+        else:
+            print("Invalid time zone. The old time zone will still be used.")
 
     def set_theme(self, theme):
         """
@@ -206,7 +215,6 @@ class Event:
             message = f"The User {username} already been shared of this Event.\n"
 
         return message
-    
     def remove_share(self, username):
         """
         Removes the User associated with the username
