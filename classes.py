@@ -151,3 +151,22 @@ class Calendar:
         for event in self.events:
             print(f"- {event}")
 
+class ConfigurationScreen:
+    def __init__(self, time_zone = "UTC", theme = "default"):
+        self.time_zone = ZoneInfo(time_zone)
+        self.theme = theme
+
+    def set_time_zone(self, time_zone):
+        """
+        Updates the time_zone.
+        """
+        try:
+            self.time_zone = ZoneInfo(time_zone)
+        except ValueError:
+            print("Invalid time zone. The old time zone will stil be used.")
+
+    def set_theme(self, theme):
+        """
+        Updates the theme.
+        """
+        self.theme = theme
