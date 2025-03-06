@@ -49,7 +49,7 @@ class User:
         Creates a new Calendar that is automatically 
         associated with the User. 
         """
-        new_calendar = Calendar(calendar_name, is_public, self)
+        new_calendar = CalendarFactory.create_calendar(calendar_name, is_public, self)
         self.calendars.append(new_calendar)
 
         return new_calendar
@@ -103,7 +103,7 @@ class Calendar:
         stores it in events to keep track of all events
         the that are part of the current Calendar. 
         """
-        new_event = Event(event_name, description, start_time, end_time)
+        new_event = EventFactory.create_event(event_name, description, start_time, end_time)
         self.events.append(new_event)
 
     def remove_event(self, event_name):
@@ -150,13 +150,16 @@ class Calendar:
         """
         for event in self.events:
             if event.event_name == event_name:
-                if field == "description":
-                    event.change_description(new_value)
-                elif field == "start_time":
-                    event.change_time(new_value, event.end_time.strftime("%H:%M"))
-                elif field == "end_time":
-                    event.change_time(event.start_time.strftime("%H:%M"), new_value)
+                self._update_event_fields(event, field, new_value)
                 break
+
+    def _update_event_fields(self, event, field, new_value):
+        if field == "description":
+            event.change_description(new_value)
+        elif field == "start_time":
+            event.change_time(new_value, event.end_time.strftime("%H:%M"))
+        elif field == "end_time":
+            event.change_time(event.start_time.strftime("%H:%M"), new_value)
 
     def display_calendar(self):
         """
