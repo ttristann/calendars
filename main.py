@@ -181,7 +181,7 @@ def manage_events(app, calendar_name):
             new_start = input("Enter new start time (HH:MM): ").strip()
             print(app.update_event(calendar_name, event_name, "start_time", new_start))
             new_end = input("Enter new end time (HH:MM): ").strip()
-            print(app.update_event(calendar_name, event_name, "end_time", new_start))
+            print(app.update_event(calendar_name, event_name, "end_time", new_end))
         elif option == "5":
             break
 
