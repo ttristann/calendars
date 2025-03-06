@@ -80,6 +80,14 @@ class User:
         for calendar in self.calendars:
             print(f"- {calendar.calendar_name} (Public: {calendar.is_public})")
 
+class CalendarFactory:
+    @staticmethod
+    def create_calendar(calendar_name, is_public, owner):
+        """
+        Factory method to create a new Calendar object
+        """
+        return Calendar(calendar_name, is_public, owner)
+
 class Calendar:
     def __init__(self, calendar_name, is_public, owner):
         self.calendar_name = calendar_name
@@ -179,6 +187,14 @@ class ConfigurationScreen:
         Updates the theme.
         """
         self.theme = theme
+
+class EventFactory:
+    @staticmethod
+    def create_event(event_name, description, start_time, end_time):
+        """
+        Factory method to create a new Event object
+        """
+        return Event(event_name, description, start_time, end_time)
 
 class Event:
     def __init__(self, name, description, start_time, end_time):
