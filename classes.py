@@ -24,8 +24,12 @@ class User:
         If the username is not associated
         with any, it returns None. 
         """
-        return cls.users.get(username, None)
+        return cls._find_user_by_username(username)
     
+    @classmethod
+    def _find_user_by_username(cls, username):
+        return cls.users.get(username) # returns None if username does not exist
+
     @classmethod
     def createUser(cls, username):
         """
