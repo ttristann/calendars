@@ -1,55 +1,128 @@
 from classes import *
 
-def main():
-    """
-    This is the main script that runs the program. 
-    Uses all of the classes and functions that 
-    are imported into this file. 
-    """
-    print("\nWelcome to the Calendar Application\n")
+class CalendarAppFacade:
+    def __init__(self):
+        self.current_user = None
 
-    current_user = None # to keep track of the logged-in user throughout the whole session
+    def sign_up(self, username):
+        user = User.createUser(username)
+        if user:
+            self.current_user = user
+            return f"User {username} has successfully been created!"
+        return f"Username {username} already exists. Try logging in or use a different username."
+
+    def log_in(self, username):
+        user = User.loginUser(username)
+        if user:
+            self.current_user = user
+            return f"Welcome back, {username}!"
+        return "That User does not exist. Try signing up."
+
+    def create_calendar(self, calendar_name, is_public):
+        if self.current_user:
+            self.current_user.create_calendar(calendar_name, is_public)
+            return f"Calendar '{calendar_name}' created successfully!"
+        return "No user logged in."
+
+    def display_calendars(self):
+        if self.current_user:
+            self.current_user.display_calendars()
+        else:
+            return "No user logged in."
+
+    def delete_calendar(self, calendar_name):
+        if self.current_user:
+            self.current_user.remove_calendar(calendar_name)
+            return f"Calendar '{calendar_name}' has been deleted!"
+        return "No user logged in."
+
+    def update_calendar(self, calendar_name, new_name=None, is_public=None):
+        if self.current_user:
+            self.current_user.update_calendar(calendar_name, new_name, is_public)
+            return f"Calendar '{calendar_name}' has been updated!"
+        return "No user logged in."
+
+    def create_event(self, calendar_name, event_name, description, start_time, end_time):
+        if self.current_user:
+            calendar = next((cal for cal in self.current_user.calendars if cal.calendar_name == calendar_name), None)
+            if calendar:
+                calendar.create_event(event_name, description, start_time, end_time)
+                return f"Event '{event_name}' added to calendar '{calendar_name}'!"
+            return "Calendar not found."
+        return "No user logged in."
+
+    def display_calendar_events(self, calendar_name):
+        if self.current_user:
+            calendar = next((cal for cal in self.current_user.calendars if cal.calendar_name == calendar_name), None)
+            if calendar:
+                calendar.display_calendar()
+            else:
+                return "Calendar not found."
+        else:
+            return "No user logged in."
+
+    def delete_event(self, calendar_name, event_name):
+        if self.current_user:
+            calendar = next((cal for cal in self.current_user.calendars if cal.calendar_name == calendar_name), None)
+            if calendar:
+                calendar.remove_event(event_name)
+                return f"Event '{event_name}' removed from calendar '{calendar_name}'!"
+            return "Calendar not found."
+        return "No user logged in."
+
+    def update_event(self, calendar_name, event_name, field, new_value):
+        if self.current_user:
+            calendar = next((cal for cal in self.current_user.calendars if cal.calendar_name == calendar_name), None)
+            if calendar:
+                calendar.update_event(event_name, field, new_value)
+                return f"Event '{event_name}' updated successfully!"
+            return "Calendar not found."
+        return "No user logged in."
+
+    def share_calendar(self, calendar_name, username):
+        if self.current_user:
+            calendar = next((cal for cal in self.current_user.calendars if cal.calendar_name == calendar_name), None)
+            if calendar:
+                return calendar.share_calendar(username)
+            return "Calendar not found."
+        return "No user logged in."
+
+    def log_out(self):
+        self.current_user = None
+        return "Logged out successfully."
+
+
+def main():
+    app = CalendarAppFacade()
+    print("\nWelcome to the Calendar Application\n")
 
     while True:
         print("What would you like to do:")
         print("  1. Sign up")
         print("  2. Log in")
         print("  3. Exit")
-        welcome_option = input("Choose an option (1-3): ")
+        choice = input("Choose an option (1-3): ")
 
-        if welcome_option == "1":
+        if choice == "1":
             username = input("Enter a username: ").strip()
-            user = User.createUser(username)
-            if user:
-                current_user = user
-                print(f"\nThe User {username} has successfully been created!\n")
-                user_menu(current_user)
-            else:
-                print(f"Username {username} already exists. Try loggin in or use a different username.\n")
-
-        elif welcome_option == "2":
+            print(app.sign_up(username))
+        elif choice == "2":
             username = input("Enter your username: ").strip()
-            user = User.loginUser(username)
-            if user:
-                print(f"Welcome back, {username}!\n")
-                current_user = user
-                user_menu(current_user)
-            else:
-                print("That User does not exist. Try signing up.")
-        elif welcome_option == "3":
+            print(app.log_in(username))
+            user_menu(app)
+        elif choice == "3":
             print("Exiting the application now. Goodbye!")
             break
         else:
-            print("Invalid choice. Choose 1, 2, 3")
+            print("Invalid choice. Choose 1, 2, or 3.")
 
 
-def user_menu(user):
-    """Menu for logged-in users to manage calendars and events."""
+def user_menu(app):
     while True:
-        print(f"\nWelcome, {user.username}! What would you like to do?")
+        print("\nUser Menu:")
         print("  1. Create a Calendar")
         print("  2. View My Calendars")
-        print("  3. Manage a Calendar")
+        print("  3. Manage Events")
         print("  4. Delete a Calendar")
         print("  5. Update a Calendar")
         print("  6. Log Out")
@@ -58,140 +131,59 @@ def user_menu(user):
         if option == "1":
             calendar_name = input("Enter calendar name: ").strip()
             is_public = input("Should it be public? (yes/no): ").strip().lower() == "yes"
-            user.create_calendar(calendar_name, is_public)
-            print(f"Calendar '{calendar_name}' created successfully!")
-
+            print(app.create_calendar(calendar_name, is_public))
         elif option == "2":
-            user.display_calendars()
-
+            app.display_calendars()
         elif option == "3":
-            if not user.calendars:
-                print("You have no calendars. Create one first!")
-                continue
-
-            calendar_name = input("Enter the calendar name to manage: ").strip()
-            calendar = next((cal for cal in user.calendars if cal.calendar_name == calendar_name), None)
-
-            if not calendar:
-                print("Calendar not found.")
-                continue
-
-            manage_calendar(calendar)
-
+            calendar_name = input("Enter calendar name to manage events: ").strip()
+            manage_events(app, calendar_name)
         elif option == "4":
-            if not user.calendars:
-                print("You have no calendars to delete!")
-                continue
-
-            calendar_name = input("Enter the calendar name to delete: ").strip()
-            user.remove_calendar(calendar_name)
-            print(f"Calendar '{calendar_name}' has been deleted!")
-
+            calendar_name = input("Enter calendar name to delete: ").strip()
+            print(app.delete_calendar(calendar_name))
         elif option == "5":
-            if not user.calendars:
-                print("You have no calendars to update!")
-                continue
-
-            calendar_name = input("Enter the calendar name to update: ").strip()
-            new_name = input("Enter the new calendar name (leave blank to keep the same): ").strip()
+            calendar_name = input("Enter calendar name to update: ").strip()
+            new_name = input("Enter new name (leave blank to keep the same): ").strip()
             change_public = input("Change privacy setting? (yes/no): ").strip().lower()
-
-            if change_public == "yes":
-                is_public = input("Should it be public? (yes/no): ").strip().lower() == "yes"
-            else:
-                is_public = None  # Keep the current setting
-
-            user.update_calendar(calendar_name, new_name if new_name else None, is_public)
-            print(f"Calendar '{calendar_name}' has been updated!")
-
+            is_public = change_public == "yes"
+            print(app.update_calendar(calendar_name, new_name if new_name else None, is_public))
         elif option == "6":
-            print("Logging out...")
+            print(app.log_out())
             break
-
         else:
-            print("Invalid option. Please choose 1-6.")
+            print("Invalid choice. Choose 1-6.")
 
-def manage_calendar(calendar):
-    """Menu to manage a specific calendar."""
+
+def manage_events(app, calendar_name):
     while True:
-        print(f"\nManaging Calendar: {calendar.calendar_name}")
+        print("\nManage Events:")
         print("  1. Add an Event")
         print("  2. View Events")
         print("  3. Delete an Event")
         print("  4. Update an Event")
-        print("  5. Share Calendar")
-        print("  6. Go Back")
-        option = input("Choose an option (1-6): ")
+        print("  5. Go Back")
+        option = input("Choose an option (1-5): ")
 
         if option == "1":
             event_name = input("Enter event name: ").strip()
             description = input("Enter event description: ").strip()
             start_time = input("Enter start time (HH:MM): ").strip()
             end_time = input("Enter end time (HH:MM): ").strip()
-            calendar.create_event(event_name, description, start_time, end_time)
-            print(f"Event '{event_name}' added!")
-
+            print(app.create_event(calendar_name, event_name, description, start_time, end_time))
         elif option == "2":
-            calendar.display_calendar()
-
+            app.display_calendar_events(calendar_name)
         elif option == "3":
             event_name = input("Enter event name to delete: ").strip()
-            calendar.remove_event(event_name)
-            print(f"Event '{event_name}' removed!")
-
+            print(app.delete_event(calendar_name, event_name))
         elif option == "4":
-            update_event(calendar)
-
+            event_name = input("Enter event name to update: ").strip()
+            new_desc = input("Enter the new description: ").strip()
+            print(app.update_event(calendar_name, event_name, "description", new_desc))
+            new_start = input("Enter new start time (HH:MM): ").strip()
+            print(app.update_event(calendar_name, event_name, "start_time", new_start))
+            new_end = input("Enter new end time (HH:MM): ").strip()
+            print(app.update_event(calendar_name, event_name, "end_time", new_start))
         elif option == "5":
-            share_with = input("Enter username to share with: ").strip()
-            calendar.share_calendar(share_with)
-            print(f"Calendar shared with {share_with}!")
-
-        elif option == "6":
-            print("Going back to the main menu...")
             break
-
-        else:
-            print("Invalid option. Please choose 1-6.")
-
-def update_event(calendar):
-    """Updates an event in a calendar."""
-    event_name = input("Enter the event name to update: ").strip()
-    event = next((e for e in calendar.events if e.event_name == event_name), None)
-
-    if not event:
-        print("Event not found!")
-        return
-
-    print("\nWhat would you like to update?")
-    print("  1. Event Name")
-    print("  2. Description")
-    print("  3. Start Time")
-    print("  4. End Time")
-    option = input("Choose an option (1-4): ")
-
-    if option == "1":
-        new_name = input("Enter the new event name: ").strip()
-        event.name = new_name
-        print("Event name updated!")
-
-    elif option == "2":
-        new_desc = input("Enter the new description: ").strip()
-        event.change_description(new_desc)
-        print("Event description updated!")
-
-    elif option == "3":
-        new_start = input("Enter new start time (HH:MM): ").strip()
-        event.change_time(new_start, event.end_time.strftime("%H:%M"))
-        print("Event start time updated!")
-
-    elif option == "4":
-        new_end = input("Enter new end time (HH:MM): ").strip()
-        event.change_time(event.start_time.strftime("%H:%M"), new_end)
-        print("Event end time updated!")
-
-    else:
-        print("Invalid option. No changes made.")
 
 if __name__ == "__main__":
     main()
